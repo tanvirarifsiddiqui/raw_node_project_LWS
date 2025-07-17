@@ -10,6 +10,7 @@ const url = require("url");
 const {StringDecoder} = require("string_decoder");
 const routes = require('../routes');
 const {notFoundHandler} = require('../handlers/route_handlers/notFoundHandler');
+const {parseJson} = require('../helpers/utilities');
 
 //Module Scaffolding
 
@@ -35,28 +36,38 @@ handler.handleRequestResponse = (request, response) => {
         headerObject,
     };
 
-    chosenHandler(requestProperties, (statusCode, payload) => {
-        statusCode = typeof (statusCode) === "number" ? statusCode : 500;
-        payload = typeof (payload) === "object" ? payload : {};
 
-        const payloadString = JSON.stringify(payload);
-
-
-        //return the final response
-        response.writeHead(statusCode);
-        response.end(payloadString);
-
-
-    });
     //handling body here
     let decoder = new StringDecoder('utf-8');
     let requestData = "";
     request.on('end', () => {
         requestData += decoder.end();
-        console.log(requestData);
+
+        // push request properties inside request properties
+
+        requestProperties.body = parseJson(requestData);
+
+        // we have to keep chosen handler here
+        chosenHandler(requestProperties, (statusCode, payload) => {
+            statusCode = typeof (statusCode) === "number" ? statusCode : 500;
+            payload = typeof (payload) === "object" ? payload : {};
+
+            const payloadString = JSON.stringify(payload);
+
+
+            //return the final response
+            response.setHeader("content-type", "application/json");
+            response.writeHead(statusCode);
+            response.end(payloadString);
+
+        });
+
     });
+
     request.on('data', (chunk) => {
         requestData += decoder.write(chunk);
+
+        //i have to add it into the request properties
     });
 
 };

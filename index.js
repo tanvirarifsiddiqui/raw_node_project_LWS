@@ -17,28 +17,6 @@ const data = require('./lib/data');
 
 const app = {};
 
-//testing file system
-// data.create("test", "newFile", {"country": "Bangladesh", "language": "Bengali"}, (err) => {
-//     if (err) {
-//         console.log(`Error is : ${err}`);
-//     }
-// });
-
-// data.read("test", "newFile", (err, data) => {
-//     if (!err) {
-//         console.log(data);
-//     } else console.log(err);
-// })
-
-// data.update("test", "newFile", {"country": "America", "language": "English"}, (err) => {
-//     console.log(`Error is : ${err}`);
-// });
-
-data.delete("test", "newFile", (err) => {
-    console.log(err);
-})
-
-
 app.createServer = () => {
     const server = http.createServer(app.handleReqRes);
     server.listen(environment.port, () => {
