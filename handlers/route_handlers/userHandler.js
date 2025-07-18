@@ -156,7 +156,7 @@ handler._user.put = (requestProperties, callback) => {
 
         if (firstName || lastName || password) {
             data.read("users", phoneNumber, (err, fileContent) => {
-                userData = {...parseJson(fileContent)};
+                const userData = {...parseJson(fileContent)};
                 if (!err && fileContent) {
                     if (firstName) {
                         userData.firstName = firstName;

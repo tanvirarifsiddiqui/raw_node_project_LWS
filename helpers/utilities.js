@@ -28,4 +28,19 @@ utilities.hashString = (str => {
     }
 });
 
+utilities.createRandomString = (strLength => {
+
+    let length = strLength;
+    length = typeof (strLength) === 'number' && strLength > 0 ? strLength : false;
+    let output = '';
+    if (length) {
+        let possibleCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890';
+        for (let i = 0; i <= length; i++) {
+            output += possibleCharacters.charAt(Math.floor(Math.random() * possibleCharacters.length));
+        }
+        console.log(output)
+    }
+    return output;
+});
+
 module.exports = utilities;
