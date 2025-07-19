@@ -10,6 +10,7 @@
 const data = require("../../lib/data");
 const {hashString} = require("../../helpers/utilities");
 const {parseJson} = require("../../helpers/utilities");
+const tokenHandler = require("./token_handler");
 
 //Module Scaffolding
 const handler = {};
@@ -36,21 +37,33 @@ handler._user.get = (requestProperties, callback) => {
         : false;
 
     if (phoneNumber) {
-        data.read('users', phoneNumber, (err, userInfo) => {
-            if (!err && userInfo) {
-                const parsedUserObject = {...parseJson(userInfo)};
-                delete parsedUserObject.password;
-                console.log(parsedUserObject);
-                callback(200, parsedUserObject);
-            } else {
-                callback(404, {
-                    error: "Requested user not found!",
+        //verify token
+        const token = typeof (requestProperties.headerObject.token) === 'string' ? requestProperties.headerObject.token : false;
+
+        tokenHandler._token.verify(token, phoneNumber, (isTokenValid) => {
+            if (isTokenValid) {
+                data.read('users', phoneNumber, (err, userInfo) => {
+                    if (!err && userInfo) {
+                        const parsedUserObject = {...parseJson(userInfo)};
+                        delete parsedUserObject.password;
+                        console.log(parsedUserObject);
+                        callback(200, parsedUserObject);
+                    } else {
+                        callback(404, {
+                            error: "Requested user not found!",
+                        });
+                    }
                 });
+            } else {
+                callback(403, {
+                    error: 'Authentication failure!',
+                })
             }
-        });
+        })
+
     } else {
         callback(404, {
-            error: "Requested user not found!",
+            error: "Invalid Phone Number!",
         });
     }
 };
@@ -155,37 +168,48 @@ handler._user.put = (requestProperties, callback) => {
     if (phoneNumber) {
 
         if (firstName || lastName || password) {
-            data.read("users", phoneNumber, (err, fileContent) => {
-                const userData = {...parseJson(fileContent)};
-                if (!err && fileContent) {
-                    if (firstName) {
-                        userData.firstName = firstName;
-                    }
-                    if (lastName) {
-                        userData.lastName = lastName;
-                    }
-                    if (password) {
-                        userData.password = hashString(password);
-                    }
+            //verify token
+            const token = typeof (requestProperties.headerObject.token) === 'string' ? requestProperties.headerObject.token : false;
 
-                    // Now Storing Data into file
-                    data.update("users", phoneNumber, userData, (err) => {
-                        if (!err) {
-                            callback(200, {
-                                message: "user updated successfully"
+            tokenHandler._token.verify(token, phoneNumber, (isTokenValid) => {
+                if (isTokenValid) {
+                    data.read("users", phoneNumber, (err, fileContent) => {
+                        const userData = {...parseJson(fileContent)};
+                        if (!err && fileContent) {
+                            if (firstName) {
+                                userData.firstName = firstName;
+                            }
+                            if (lastName) {
+                                userData.lastName = lastName;
+                            }
+                            if (password) {
+                                userData.password = hashString(password);
+                            }
+
+                            // Now Storing Data into file
+                            data.update("users", phoneNumber, userData, (err) => {
+                                if (!err) {
+                                    callback(200, {
+                                        message: "user updated successfully"
+                                    });
+                                } else {
+                                    callback(500, {
+                                        error: "couldn't update user!",
+                                    })
+                                }
                             });
-                        } else {
-                            callback(500, {
-                                error: "couldn't update user!",
-                            })
-                        }
+
+
+                        } else callback(500, {
+                            message: "there is a problem server side"
+                        })
                     });
-
-
-                } else callback(500, {
-                    message: "there is a problem server side"
-                })
-            });
+                } else {
+                    callback(403, {
+                        error: 'Authentication failure!',
+                    })
+                }
+            })
         } else {
             callback(400, {
                 error: "you have a problem in your request"
@@ -210,10 +234,21 @@ handler._user.delete = (requestProperties, callback) => {
         : false;
 
     if (phoneNumber) {
-        data.delete("users", phoneNumber, (err) => {
-            if (!err) {
-                callback(200, {
-                    message: "user deleted successfully"
+        //verify token
+        const token = typeof (requestProperties.headerObject.token) === 'string' ? requestProperties.headerObject.token : false;
+
+        tokenHandler._token.verify(token, phoneNumber, (isTokenValid) => {
+            if (isTokenValid) {
+                data.delete("users", phoneNumber, (err) => {
+                    if (!err) {
+                        callback(200, {
+                            message: "user deleted successfully"
+                        })
+                    }
+                })
+            } else {
+                callback(403, {
+                    error: 'Authentication failure!',
                 })
             }
         })

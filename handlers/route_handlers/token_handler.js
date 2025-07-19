@@ -27,7 +27,6 @@ handler.tokenHandler = (requestProperties, callback) => {
 
 handler._token = {} //private module scaffolding
 
-
 handler._token.get = (requestProperties, callback) => {
 
     //validation token
@@ -186,5 +185,19 @@ handler._token.delete = (requestProperties, callback) => {
 
 };
 
-
+//Authentication Handling. it is a normal function calling inside here not from route
+handler._token.verify = (tokenID, phone, callback) => {
+    data.read("tokens", tokenID, (err, tokenData) => {
+        if (!err && tokenData) {
+            const tokenObject = parseJson(tokenData);
+            if (tokenObject.phoneNumber === phone && tokenObject.expires > Date.now()) {
+                callback(true);
+            } else {
+                callback(false);
+            }
+        } else {
+            callback(false);
+        }
+    })
+}
 module.exports = handler;
