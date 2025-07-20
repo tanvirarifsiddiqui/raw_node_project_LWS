@@ -5,13 +5,15 @@ const environments = {};
 environments.staging = {
     port: 3000,
     envName: 'staging',
-    secretKey: "tanvir123"
+    secretKey: "tanvir123", // for password encryption
+    maxChecks: 5
 }
 
 environments.production = {
     port: 5000,
     envName: 'production',
-    secretKey: "tanvir123"
+    secretKey: "tanvir123",
+    maxChecks: 5
 }
 
 //determine which environment was passed
