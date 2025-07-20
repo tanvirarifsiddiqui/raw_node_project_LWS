@@ -10,8 +10,7 @@
 const http = require('http');
 const {handleRequestResponse} = require('./helpers/handleRequestResponse');
 const environment = require('./helpers/environment');
-const data = require('./lib/data');
-
+const {sendTwilioSms} = require('./helpers/notifications');
 
 // app object module Scaffolding
 
